@@ -1,0 +1,28 @@
+import requests
+
+# API key
+API_KEY = 'AIzaSyCZ2z9E7DFGGIKBUW4X7AaANHXaBEE6V_M'
+CX = 'c1805c89867d149c3'
+
+def google_search(query):
+    # Base URL for Google Custom Search API
+    base_url = 'https://www.googleapis.com/customsearch/v1'
+
+    # Parameters for the API request
+    params = {
+        'key': API_KEY,
+        'cx': CX,
+        'q': query,
+        'num': 5
+    }
+
+    # Make the API request
+    response = requests.get(base_url, params=params)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        data = response.json()
+        return data['items']
+    
+query = "who is modi?"
+search = google_search(query)
