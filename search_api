@@ -13,7 +13,8 @@ def google_search(query):
         'key': API_KEY,
         'cx': CX,
         'q': query,
-        'num': 5
+        'num': 5,
+        'lr': 'lang_en'
     }
 
     # Make the API request
@@ -22,7 +23,26 @@ def google_search(query):
     # Check if the request was successful
     if response.status_code == 200:
         data = response.json()
-        return data['items']
+        return [{key: x[key] for key in ['title','link', 'snippet']} for x in data['items']]
+    else: 
+        return []
     
-query = "who is modi?"
-search = google_search(query)
+def google_search_multiQ(questions):
+    QnA = {}
+    for q in questions:
+        QnA[q] = google_search(q)
+    return QnA
+
+# Example
+query =['is cinnamon good?', 'is cinnamon a bad?', 'is cinnamon not conncted to health?']
+search = google_search_multiQ(query)
+
+
+# Outputs
+# --> search.keys()
+#   --> dict_keys(['is cinnamon good?', 'is cinnamon a bad?', 'is cinnamon not conncted to health?'])
+# --> search['is cinnamon a bad?'][2]   #2 is the 2nd question
+#   -->dict of size 3. with title, link and snippet(description)
+'''{'title': 'Cinnamon: The Good, the Bad, and the Tasty - Gastrointestinal Society',
+ 'link': 'https://badgut.org/information-centre/health-nutrition/cinnamon/',
+ 'snippet': 'Mar 11, 2020 ... Do You Need to Worry? Cinnamon is a common, enjoyable spice with a wide range of health benefits, but remember that it is not an adequate\xa0...'}'''
