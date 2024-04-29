@@ -1,12 +1,15 @@
 import pathlib
 import textwrap
 import requests
+import json
 
 from sumy.parsers.html import HtmlParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.lsa import LsaSummarizer
 
 import google.generativeai as genai
+
+from googleapiclient.discovery import build
 
 from flask import Flask, request
 import pandas as pd
@@ -18,7 +21,7 @@ nltk.download('punkt')
 GEMINI_API_KEY = "AIzaSyB8S2mzKjNLtWRdTVi7FAkeld5eXo1bpGE"
 SEARCH_API_KEY = 'AIzaSyAREEAMxi9KoVhG-yeE2JM8puR6WCAE--k'
 CX = '70aad34f181724ec4'
-NUM = 50
+NUM = 3
 
 genai.configure(api_key=GEMINI_API_KEY)
 
@@ -28,14 +31,14 @@ app = Flask(__name__)
 
 def google_search(query):
     # Base URL for Google Custom Search API
-    base_url = 'https://www.googleapis.com/customsearch/v1'
+    base_url = 'https://www.googleapis.com/customsearch/v1?fields=items(title,link)'
 
     # Parameters for the API request
     params = {
         'key': SEARCH_API_KEY,
         'cx': CX,
         'q': query,
-        'num':NUM,
+        'num': NUM,
         'lr': 'lang_en'
     }
 
@@ -53,6 +56,7 @@ def google_search_multiQ(questions):
     QnA = {}
     for q in questions:
         QnA[q] = google_search(q)
+        print(q, QnA[q])
     return QnA
 
 def get_website_summary(url):
@@ -107,27 +111,34 @@ def getArticles():
     req = request.get_json()
 
     queries_with_categories = req['Result']
+    articles_with_categories = {}
     summaries_with_categories = {}
 
-    # for category in queries_with_categories:
-    #     summaries_with_categories[category] = []
-    #     articles_with_queries = google_search_multiQ(queries_with_categories[category])
-    #     for question in articles_with_queries:
-    #         for article in articles_with_queries[question]:
-    #             summary = get_website_summary(article['link'])
-    #             summaries_with_categories[category].append({'title': article['title'], 'link': article['link'], 'summary': summary})
+    for category in queries_with_categories:
+        summaries_with_categories[category] = []
+        #articles_with_queries = google_search_multiQ(queries_with_categories[category])
+        articles_with_categories[category] = google_search_multiQ(queries_with_categories[category])
+        #print(articles_with_queries)
+    with open('output.json', 'w') as w:
+        w.write(json.dumps(articles_with_categories, indent=4))
+        
+    for category in articles_with_categories:
+        for question in articles_with_categories[category]:
+            for article in articles_with_categories[category][question]:
+                summary = get_website_summary(article['link'])
+                summaries_with_categories[category].append({'title': article['title'], 'link': article['link'], 'summary': summary})
 
-    df = pd.read_csv('expanded_df.csv')
-    for i in range(len(df)):
-        category = df.iloc[i]["category"]
-        title = df.iloc[i]["title"]
-        link = df.iloc[i]["link"]
-        summary = df.iloc[i]["summary"]
+    # df = pd.read_csv('expanded_df.csv')
+    # for i in range(len(df)):
+    #     category = df.iloc[i]["category"]
+    #     title = df.iloc[i]["title"]
+    #     link = df.iloc[i]["link"]
+    #     summary = df.iloc[i]["summary"]
 
-        if category not in summaries_with_categories:
-            summaries_with_categories[category] = []
+    #     if category not in summaries_with_categories:
+    #         summaries_with_categories[category] = []
 
-        summaries_with_categories[category].append({'title': title, 'link': link, 'summary': summary})
+    #     summaries_with_categories[category].append({'title': title, 'link': link, 'summary': summary})
 
     return {'Result': summaries_with_categories}
 
@@ -144,7 +155,7 @@ def generateResult():
         for article in summaries_with_categories[category]:
             summary_stuff += f"{category}:\t{article['summary']}\n"
 
-    final_response = model.generate_content(f"{summary_stuff}\n\nYou are an expert at answering questions with a balanced perspective. Above are some perspectives and their respective content to answer the question: {question}. Please closely analyse all the different viewpoints and crisply answer the question: {question} directly, but add the crisp information obtained from alternative perspectives to provide a more unbiased answer.")
+    final_response = model.generate_content(f"{summary_stuff}\n\nYou are an expert at answering questions with a balanced perspective. Above are some perspectives and their respective content to answer the question: {question}. Please closely analyse all the different viewpoints and crisply answer the question: {question} directly, but add the crisp information obtained from each alternative perspective to provide a more unbiased answer, representative of all perspectives but crisp and caters to the original question.")
     with open('out.txt', 'w') as w:
         print(w.write(final_response.text))
 
