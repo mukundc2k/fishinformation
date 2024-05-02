@@ -1,0 +1,53 @@
+{
+    "Anthropological Exploration:": {
+        "How have different cultures around the world used and perceived chocolate throughout the ages?": [
+            "return code: 429 | response: <Response [429]>"
+        ]
+    },
+    "Cultural and Historical:": {
+        "How has chocolate influenced cultures and societies throughout history?": [
+            "return code: 429 | response: <Response [429]>"
+        ]
+    },
+    "Economic Impact:": {
+        "What is the economic value of chocolate production and consumption, both locally and globally?": [
+            "return code: 429 | response: <Response [429]>"
+        ]
+    },
+    "Environmental Concerns:": {
+        "How does chocolate production impact the environment, and what are the sustainable practices that can be employed?": [
+            "return code: 429 | response: <Response [429]>"
+        ]
+    },
+    "Gourmand's Delight:": {
+        "What is the sensory experience of chocolate and how does it enhance culinary enjoyment?": [
+            "return code: 429 | response: <Response [429]>"
+        ]
+    },
+    "Health-Focused:": {
+        "How does chocolate contribute to overall well-being and health?": [
+            {
+                "title": "How to Eat Right When You Have Arthritis (Wellness) | HSS",
+                "link": "https://www.hss.edu/conditions_eating-right-with-arthritis.asp"
+            },
+            {
+                "title": "The Benefits of Having a Healthy Relationship with Chocolate ...",
+                "link": "https://www.hopkinsmedicine.org/health/wellness-and-prevention/the-benefits-of-having-a-healthy-relationship-with-chocolate"
+            },
+            {
+                "title": "5 surprising benefits of walking - Harvard Health",
+                "link": "https://www.health.harvard.edu/staying-healthy/5-surprising-benefits-of-walking"
+            }
+        ]
+    },
+    "Nutritional Perspective:": {
+        "What nutrients and antioxidants are present in chocolate and how do they impact the body?": [
+            "return code: 429 | response: <Response [429]>"
+        ]
+    },
+    "Psychological Perspective:": {
+        "What are the potential mood-boosting or cognitive-enhancing properties of chocolate?": [
+            "return code: 429 | response: <Response [429]>"
+        ]
+    }
+}
