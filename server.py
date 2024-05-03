@@ -100,7 +100,7 @@ def generateCategories():
 
     question = req['query']
 
-    response = model.generate_content(f"Paraphrase the following question in different ways that preserve the core meaning but are different from each other in point of view, ideology etc: '{question}'")
+    response = model.generate_content(f"Paraphrase the following question in different have the same core meaning but are different from each other in terms of like positive, negative, neutral, left leaning, right leaning, critical, supportive, etc. basically come up with different point of views that is relevant to the question, ideologies etc: '{question}'")
     
     dict_of_lists = markdown_to_dict(response.text)
 
@@ -155,7 +155,7 @@ def generateResult():
         for article in summaries_with_categories[category]:
             summary_stuff += f"{category}:\t{article['summary']}\n"
 
-    final_response = model.generate_content(f"{summary_stuff}\n\nYou are an expert at answering questions with a balanced perspective. Above are some perspectives and their respective content to answer the question: {question}. Please closely analyse all the different viewpoints and crisply answer the question: {question} directly, but add the crisp information obtained from each alternative perspective to provide a more unbiased answer, representative of all perspectives but crisp and caters to the original question.")
+    final_response = model.generate_content(f"{summary_stuff}\n\nYou are an kind humane but critical and factual expert at answering questions with a balanced perspective that is inclusive and comprehensive of all views. Above are some perspectives and their respective content to closely analyse and crisply answer the main question: {question}, to answer like the balanced humane critical but exhaustive expert, add the crisp information obtained from each alternative perspective to provide a more unbiased answer, representative of all perspectives but not long, in a normal sounding sentence or max a paragraph and caters to the original question.")
     with open('out.txt', 'w') as w:
         print(w.write(final_response.text))
 
