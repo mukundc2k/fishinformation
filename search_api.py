@@ -1,8 +1,8 @@
 import requests
 
 # API key
-API_KEY = 'AIzaSyCZ2z9E7DFGGIKBUW4X7AaANHXaBEE6V_M'
-CX = 'c1805c89867d149c3'
+API_KEY = 'YOUR_CUSTOM_SEARCH_ENGINE_API_KEY'
+CX = 'YOUR_SEARCH_ENGINE_ID'
 
 def google_search(query):
     # Base URL for Google Custom Search API
