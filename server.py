@@ -18,9 +18,9 @@ import re
 import nltk
 nltk.download('punkt')
 
-GEMINI_API_KEY = "AIzaSyB8S2mzKjNLtWRdTVi7FAkeld5eXo1bpGE"
-SEARCH_API_KEY = 'AIzaSyAREEAMxi9KoVhG-yeE2JM8puR6WCAE--k'
-CX = '70aad34f181724ec4'
+GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
+SEARCH_API_KEY = 'YOUR_CUSTOM_SEARCH_ENGINE_API_KEY'
+CX = 'YOUR_SEARCH_ENGINE_ID'
 NUM = 3
 
 genai.configure(api_key=GEMINI_API_KEY)
