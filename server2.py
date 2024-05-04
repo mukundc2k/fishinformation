@@ -151,10 +151,13 @@ def generateResult():
     question = req['query']
     summaries_with_categories = req['Result']
 
-    summary_stuff = ''
-    # citations start from 1 for better UI
-    for i, (_, row) in enumerate(df_with_summary.iterrows()):
-        summary_stuff += f'{i+1} {row["category"]}\t{row["summary"]}\n'
+    summary_stuff = ""
+    counter = 0
+    for category in summaries_with_categories:
+        for article in summaries_with_categories[category]:
+            counter+=1
+            summary_stuff += f"{counter+1} {category}:\t{article['summary']}\n"
+
 
     final_response = model.generate_content(f"{summary_stuff}\n\nYou are an kind humane but critical and factual expert at answering questions with a balanced perspective that is inclusive and comprehensive of all views. Above are some perspectives and their respective content to closely analyse and crisply answer the main question: {question}, to answer like the balanced humane critical but exhaustive expert, add the crisp information obtained from each alternative perspective to provide a more unbiased answer, representative of all perspectives but not long, in a normal sounding sentence or max a paragraph and caters to the original question. Also, give citations by indicating the line number in square brackets.")
     numbers = [x - 1 for x in [int(x) for sublist in [re.findall(r'\d+', x) for x in re.findall(r'\[(\d+(?:,\s*\d+)*)]', final_response.text)] for x in sublist]]
