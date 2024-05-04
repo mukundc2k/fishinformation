@@ -2,6 +2,7 @@ import pathlib
 import textwrap
 import requests
 import json
+import re
 
 from sumy.parsers.html import HtmlParser
 from sumy.nlp.tokenizers import Tokenizer
@@ -150,16 +151,25 @@ def generateResult():
     question = req['query']
     summaries_with_categories = req['Result']
 
-    summary_stuff = ""
-    for category in summaries_with_categories:
-        for article in summaries_with_categories[category]:
-            summary_stuff += f"{category}:\t{article['summary']}\n"
+    summary_stuff = ''
+    # citations start from 1 for better UI
+    for i, (_, row) in enumerate(df_with_summary.iterrows()):
+        summary_stuff += f'{i+1} {row["category"]}\t{row["summary"]}\n'
 
-    final_response = model.generate_content(f"{summary_stuff}\n\nYou are an kind humane but critical and factual expert at answering questions with a balanced perspective that is inclusive and comprehensive of all views. Above are some perspectives and their respective content to closely analyse and crisply answer the main question: {question}, to answer like the balanced humane critical but exhaustive expert, add the crisp information obtained from each alternative perspective to provide a more unbiased answer, representative of all perspectives but not long, in a normal sounding sentence or max a paragraph and caters to the original question.")
+    final_response = model.generate_content(f"{summary_stuff}\n\nYou are an kind humane but critical and factual expert at answering questions with a balanced perspective that is inclusive and comprehensive of all views. Above are some perspectives and their respective content to closely analyse and crisply answer the main question: {question}, to answer like the balanced humane critical but exhaustive expert, add the crisp information obtained from each alternative perspective to provide a more unbiased answer, representative of all perspectives but not long, in a normal sounding sentence or max a paragraph and caters to the original question. Also, give citations by indicating the line number in square brackets.")
+    numbers = [x - 1 for x in [int(x) for sublist in [re.findall(r'\d+', x) for x in re.findall(r'\[(\d+(?:,\s*\d+)*)]', final_response.text)] for x in sublist]]
+
+    sentence = final_response.text
+    for link in [x+1 for x in numbers]:
+        sentence = sentence.replace("[" + str(link) + "]", "[{}]".format(df_with_summary['link'][link-1], link))
+        sentence = sentence.replace(", " + str(link) + ",", ", {},".format(df_with_summary['link'][link-1], link))
+        sentence = sentence.replace("[" + str(link) + ",", "[{},".format(df_with_summary['link'][link-1], link))
+        sentence = sentence.replace(", " + str(link) + "]", ", {}]".format(df_with_summary['link'][link-1], link))
+
     with open('out.txt', 'w') as w:
-        print(w.write(final_response.text))
+        print(w.write(sentence))
 
-    return {'Result': final_response.text}
+    return {'Result': sentence}
 
 if __name__ == '__main__':
     app.run(port=5000)
