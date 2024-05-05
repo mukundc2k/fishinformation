@@ -103,7 +103,7 @@ def generateCategories():
 
     question = req['query']
 
-    response = model.generate_content(f"Paraphrase the following question in different have the same core meaning but are different from each other in terms of like positive, negative, neutral, left leaning, right leaning, critical, supportive, etc. basically come up with different point of views that is relevant to the question, ideologies etc: '{question}'")
+    response = model.generate_content(f"Paraphrase the following question in different have the same core meaning but are different from each other in terms of like positive, negative, neutral, left leaning, right leaning, critical, supportive, etc. basically come up with different point of views that is relevant to the question, ideologies etc: '{question}'. Consider maximum of four points of view")
     
     dict_of_lists = markdown_to_dict(response.text)
 
@@ -151,7 +151,7 @@ def generateResult():
             summary_stuff += f"{counter} {category}:\t{article['summary']}\n"
 
 
-    final_response = model.generate_content(f"{summary_stuff}\n\nYou are an kind humane but critical and factual expert at answering questions with a balanced perspective that is inclusive and comprehensive of all views. Above are some perspectives and their respective content to closely analyse and crisply answer the main question: {question}, to answer like the balanced humane critical but exhaustive expert, add the crisp information obtained from each alternative perspective to provide a more unbiased answer, representative of all perspectives but not long, in a normal sounding sentence or max a paragraph and caters to the original question. Additionally, provide citations in hyperlink format, indicating the line number in square brackets.")
+    final_response = model.generate_content(f"{summary_stuff}\nYou are a kind, humane but critical, and factual expert at answering questions with a balanced perspective that is inclusive and comprehensive of all views. Above are some perspectives and their respective content to closely analyze and crisply answer the main question: {question}. To answer like the balanced, humane, critical but exhaustive expert, add the crisp information obtained from each alternative perspective to provide a more unbiased answer, representative of all perspectives but not long, in a normal sounding sentence or max a paragraph and caters to the original question. Additionally, provide citations in hyperlink format that is [1]({{link}}) , indicating the line number in square brackets.")
     print(final_response)
     data_rows = [item for sublist in summaries_with_categories.values() for item in sublist]
 
@@ -161,16 +161,19 @@ def generateResult():
     numbers = [x - 1 for x in [int(x) for sublist in [re.findall(r'\d+', x) for x in re.findall(r'\[(\d+(?:,\s*\d+)*)]', final_response.text)] for x in sublist]]
 
     sentence = final_response.text
-    for link in [x+1 for x in numbers]:
-        sentence = sentence.replace("[" + str(link) + "]", "[{}]".format(df['link'][link-1], link))
-        sentence = sentence.replace(", " + str(link) + ",", ", {},".format(df['link'][link-1], link))
-        sentence = sentence.replace("[" + str(link) + ",", "[{},".format(df['link'][link-1], link))
-        sentence = sentence.replace(", " + str(link) + "]", ", {}]".format(df['link'][link-1], link))
+
+    links_list = []
+    for link_num in [x+1 for x in numbers]:
+        link = df['link'][link_num - 1]
+        links_list.append(f"{link_num}: {link}")
+
+    links_str = '\n'.join(links_list)
+    modified_sentence = f"{sentence}\n\n{links_str}"
 
     with open('out.txt', 'w') as w:
-        print(w.write(sentence))
+        print(w.write(modified_sentence))
 
-    return {'Result': sentence}
+    return {'Result': modified_sentence}
 
 if __name__ == '__main__':
     app.run(port=5000)
