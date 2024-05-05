@@ -22,11 +22,13 @@ nltk.download('punkt')
 GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
 SEARCH_API_KEY = 'YOUR_CUSTOM_SEARCH_ENGINE_API_KEY'
 CX = 'YOUR_SEARCH_ENGINE_ID'
-NUM = 3
+NUM = 2
 
 genai.configure(api_key=GEMINI_API_KEY)
 
 model = genai.GenerativeModel('gemini-pro')
+
+df = pd.DataFrame()  # Define a global DataFrame
 
 app = Flask(__name__)
 
@@ -127,19 +129,9 @@ def getArticles():
         for question in articles_with_categories[category]:
             for article in articles_with_categories[category][question]:
                 summary = get_website_summary(article['link'])
-                summaries_with_categories[category].append({'title': article['title'], 'link': article['link'], 'summary': summary})
+                # summaries_with_categories[category].append({'title': article['title'], 'link': article['link'], 'summary': summary})
+                summaries_with_categories[category].append({'category': category, 'question': question, 'title': article['title'], 'link': article['link'], 'summary': summary})
 
-    # df = pd.read_csv('expanded_df.csv')
-    # for i in range(len(df)):
-    #     category = df.iloc[i]["category"]
-    #     title = df.iloc[i]["title"]
-    #     link = df.iloc[i]["link"]
-    #     summary = df.iloc[i]["summary"]
-
-    #     if category not in summaries_with_categories:
-    #         summaries_with_categories[category] = []
-
-    #     summaries_with_categories[category].append({'title': title, 'link': link, 'summary': summary})
 
     return {'Result': summaries_with_categories}
 
@@ -156,18 +148,24 @@ def generateResult():
     for category in summaries_with_categories:
         for article in summaries_with_categories[category]:
             counter+=1
-            summary_stuff += f"{counter+1} {category}:\t{article['summary']}\n"
+            summary_stuff += f"{counter} {category}:\t{article['summary']}\n"
 
 
-    final_response = model.generate_content(f"{summary_stuff}\n\nYou are an kind humane but critical and factual expert at answering questions with a balanced perspective that is inclusive and comprehensive of all views. Above are some perspectives and their respective content to closely analyse and crisply answer the main question: {question}, to answer like the balanced humane critical but exhaustive expert, add the crisp information obtained from each alternative perspective to provide a more unbiased answer, representative of all perspectives but not long, in a normal sounding sentence or max a paragraph and caters to the original question. Also, give citations by indicating the line number in square brackets.")
+    final_response = model.generate_content(f"{summary_stuff}\n\nYou are an kind humane but critical and factual expert at answering questions with a balanced perspective that is inclusive and comprehensive of all views. Above are some perspectives and their respective content to closely analyse and crisply answer the main question: {question}, to answer like the balanced humane critical but exhaustive expert, add the crisp information obtained from each alternative perspective to provide a more unbiased answer, representative of all perspectives but not long, in a normal sounding sentence or max a paragraph and caters to the original question. Additionally, provide citations in hyperlink format, indicating the line number in square brackets.")
+    print(final_response)
+    data_rows = [item for sublist in summaries_with_categories.values() for item in sublist]
+
+    # Create the DataFrame
+    df = pd.DataFrame(data_rows, columns=['category', 'question', 'title', 'link', 'summary'])
+    print(df)
     numbers = [x - 1 for x in [int(x) for sublist in [re.findall(r'\d+', x) for x in re.findall(r'\[(\d+(?:,\s*\d+)*)]', final_response.text)] for x in sublist]]
 
     sentence = final_response.text
     for link in [x+1 for x in numbers]:
-        sentence = sentence.replace("[" + str(link) + "]", "[{}]".format(df_with_summary['link'][link-1], link))
-        sentence = sentence.replace(", " + str(link) + ",", ", {},".format(df_with_summary['link'][link-1], link))
-        sentence = sentence.replace("[" + str(link) + ",", "[{},".format(df_with_summary['link'][link-1], link))
-        sentence = sentence.replace(", " + str(link) + "]", ", {}]".format(df_with_summary['link'][link-1], link))
+        sentence = sentence.replace("[" + str(link) + "]", "[{}]".format(df['link'][link-1], link))
+        sentence = sentence.replace(", " + str(link) + ",", ", {},".format(df['link'][link-1], link))
+        sentence = sentence.replace("[" + str(link) + ",", "[{},".format(df['link'][link-1], link))
+        sentence = sentence.replace(", " + str(link) + "]", ", {}]".format(df['link'][link-1], link))
 
     with open('out.txt', 'w') as w:
         print(w.write(sentence))
