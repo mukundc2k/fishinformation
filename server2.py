@@ -69,7 +69,7 @@ def get_website_summary(url):
         # Initialize the LsaSummarizer
         summarizer = LsaSummarizer()
         # Summarize the content using the LSA algorithm
-        summary = summarizer(parser.document, 3)  # Change the number for desired summary length
+        summary = summarizer(parser.document, 1)  # Change the number for desired summary length
         # Join the sentences of the summary
         return ' '.join(map(str, summary))
     except Exception as e:
